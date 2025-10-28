@@ -22,6 +22,10 @@ export const Task = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
   {
     tableName: "tasks",

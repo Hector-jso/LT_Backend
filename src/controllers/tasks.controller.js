@@ -3,7 +3,7 @@ import sequelize from "../db.js";
 
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.findAll();
+    const tasks = await Task.findAll({ where: { userId: req.user.id } });
     res.status(200).json(tasks);
     console.log("Tareas obtenidas:\n", tasks.map(task => task.title));
   } catch (error) {
@@ -19,12 +19,13 @@ export const createTask = async (req, res) => {
     if (!title || !description || !taskDate) {
       return res.status(400).json({ message: `Faltan datos para crear la tarea: ${!taskDate ? "date" : ""}${!title ? "title" : ""}${!description ? "description" : ""}` });
     }
-    const newTask = await Task.create({ title, description, taskDate });
+    const newTask = await Task.create({ title, description, taskDate, userId: req.user.id });
 
     const taskJson = ({
       title: newTask.title,
       description: newTask.description,
       date: newTask.date,
+      userId: newTask.userId,
     })
 
     res.status(201).json(taskJson);
@@ -40,10 +41,14 @@ export const getTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({ message: "Task no encontrada" });
     }
+    const taskCheckUser = task.userId === req.user.id;
+    if (!taskCheckUser) {
+      return res.status(403).json({ message: "No autorizado para ver esta task" });
+    }
     res.status(200).json(task);
     console.log("Tarea obtenida:\n", task.title);
   } catch (error) {
-    res.status(500).json({ message: "\nError al obtener la task", error: error.message });
+    res.status(500).json({ message: "Error al obtener la task", error: error.message });
   }
 };
 
@@ -54,7 +59,11 @@ export const updateTask = async (req, res) => {
   try {
     const task = await Task.findByPk(id);
     if (!task) {
-      return res.status(404).json({ message: "\nTask no encontrada" });
+      return res.status(404).json({ message: "Task no encontrada" });
+    }
+    const taskCheckUser = task.userId === req.user.id;
+    if (!taskCheckUser) {
+      return res.status(403).json({ message: "No autorizado para actualizar esta task" });
     }
 
     await task.update({
@@ -72,7 +81,7 @@ export const updateTask = async (req, res) => {
     res.status(201).json(taskJson);
     console.log("\nTarea actualizada:\n", task.title);
   } catch (error) {
-    res.status(500).json({ message: "\nError el actualizar la task", error: error.message });
+    res.status(500).json({ message: "Error el actualizar la task", error: error.message });
   }
 };
 
@@ -89,7 +98,12 @@ export const deleteTask = async (req, res) => {
     const task = await Task.findByPk(id, { transaction });
     if (!task) {
       await transaction.rollback();
-      return res.status(404).json({ message: "\nTask no encontrada" });
+      return res.status(404).json({ message: "Task no encontrada" });
+    }
+    const taskCheckUser = task.userId === req.user.id;
+    if (!taskCheckUser) {
+      await transaction.rollback();
+      return res.status(403).json({ message: "No autorizado para eliminar esta task" });
     }
     await task.destroy({ transaction });
     await transaction.commit();

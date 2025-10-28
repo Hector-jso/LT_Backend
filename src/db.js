@@ -5,7 +5,7 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     host: DB_HOST,
     port: DB_PORT,
     dialect: 'postgres',
-    logging: false,
+    // logging: false, // Desactivar el logging de SQL en la consola
 });
 
 export default sequelize;
