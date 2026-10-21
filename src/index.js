@@ -26,10 +26,10 @@ async function syncTables() {
   }
 }
 
-// 🧠 OPCIÓN 1: borrar todo y recrear
+// OPCIÓN 1: borrar todo y recrear
 // await syncTables();
 
-// 🧠 OPCIÓN 2: solo actualizar estructuras sin borrar datos
+// OPCIÓN 2: solo actualizar estructuras sin borrar datos
 // await sequelize.sync({ alter: true });
 app.listen(PORT);
 console.log("simon si jala en el puerto: ", PORT);

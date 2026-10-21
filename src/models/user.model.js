@@ -21,6 +21,10 @@ export const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    points: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    }
   },
   {
     tableName: "users",
